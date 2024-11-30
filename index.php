@@ -1,77 +1,151 @@
-<?php
-// Step 1: Fetch data from the API
-// The URL of the Bahrain Open Data Portal API, filtered to include IT college and bachelor programs
-$url = "https://data.gov.bh/api/explore/v2.1/catalog/datasets/01-statistics-of-students-nationalities_updated/records?where=colleges%20like%20%22IT%22%20AND%20the_programs%20like%20%22bachelor%22&limit=100";
-
-// Use file_get_contents to fetch the API response as a JSON string
-$response = file_get_contents($url);
-
-// Decode the JSON string into a PHP associative array
-$data = json_decode($response, true);
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Nationality Data</title>
-    <!-- Link to Pico CSS stylesheet for default responsive styling -->
-    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css">
+    <title>UOB Students by Nationality</title>
     <style>
-        /* Optional: Add some custom spacing or tweaks to improve table appearance */
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            font-family: Arial, sans-serif;
+            line-height: 1.8;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: #940000;
+        }
+
+        header p {
+            color: #5e4545;
+        }
+
         table {
-            margin-top: 20px; /* Adds some spacing above the table */
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 70%;
+            box-shadow: 0 5px 8px rgba(0, 0, 0, 0.4);
+        
         }
-        .table-container {
-            overflow-x: auto; /* Enables horizontal scrolling for smaller screens */
+
+        table th, table td {
+            text-align: left;
+            padding: 1rem;
+            border: 1px solid #333;
         }
+
+        table th {
+            background-color: #b00000;
+            color: white;
+        }
+      
+
+        table tbody tr:hover {
+            background-color: #decccc;
+        }
+
+        footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 0.5rem 1rem; 
+    background-color: #b00000; 
+    color: white;
+    font-size: 0.85rem; 
+        }
+
+        footer a {
+            color: #ffd700; 
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline; 
+        }
+
+        /* Responsive table */
+        @media (max-width: 768px) {
+
+            table {
+                font-size: 0.8rem;
+                width: 100%;
+                overflow-x: auto;
+            }
+        }
+
+        p.empty{
+             text-align : center;
+             color : red;
+        }
+
     </style>
+   
 </head>
 <body>
-    <!-- Main container to hold the content -->
-    <main class="container">
-        <h1>University of Bahrain Student Data</h1>
+    <header>
+        <h1>UOB Students by Nationality</h1>
         
-        <!-- Wrapper div to enable horizontal scrolling for the table -->
-        <div class="table-container">
-            <!-- Dynamic table to display API data -->
-            <table role="grid">
-                <!-- Table header defining column names -->
-                <thead>
-                    <tr>
-                        <th>Year</th>
-                        <th>Semester</th>
-                        <th>Programs</th>
-                        <th>Nationality</th>
-                        <th>Colleges</th>
-                        <th>Number of Students</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    // Step 2: Dynamically generate table rows from API data
-                    // Check if the API returned any records
-                    if (!empty($data['records'])) {
-                        // Loop through each record in the API response
-                        foreach ($data['records'] as $record) {
-                            echo "<tr>"; // Start a new table row
-                            // Safely output each field, with a fallback to "N/A" if the field is missing
-                            echo "<td>" . htmlspecialchars($record['fields']['year'] ?? "N/A") . "</td>";
-                            echo "<td>" . htmlspecialchars($record['fields']['semester'] ?? "N/A") . "</td>";
-                            echo "<td>" . htmlspecialchars($record['fields']['the_programs'] ?? "N/A") . "</td>";
-                            echo "<td>" . htmlspecialchars($record['fields']['nationality'] ?? "N/A") . "</td>";
-                            echo "<td>" . htmlspecialchars($record['fields']['colleges'] ?? "N/A") . "</td>";
-                            echo "<td>" . htmlspecialchars($record['fields']['number_of_students'] ?? "N/A") . "</td>";
-                            echo "</tr>"; // End the table row
-                        }
-                    } else {
-                        // If no data is available, display a single row with a message
-                        echo "<tr><td colspan='6'>No data available</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
-        </div>
-    </main>
+        <p>Data retrieved from Bahrain Open Data Portal</p>
+    </header>
+    <div class="container">
+        <?php
+        // API URL
+        $apiUrl = "https://data.gov.bh/api/explore/v2.1/catalog/datasets/01-statistics-of-students-nationalities_updated/records?where=colleges%20like%20%22IT%22%20AND%20the_programs%20like%20%22bachelor%22&limit=100";
+
+        // Fetch and decode the API data
+        $response = file_get_contents($apiUrl);
+// Check if the API call was successful
+if ($response === FALSE) {
+    echo "<p>Unable to fetch data from the API. Please try again later.</p>";
+} else {
+    // Decode the JSON response
+    $result = json_decode($response, true);
+
+    // Check if data is available
+    if (isset($result['results']) && count($result['results']) > 0) {
+        echo "<table>";
+        echo "<thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Semester</th>
+                    <th>The Programs</th>
+                    <th>Nationality</th>
+                    <th>Colleges</th>
+                    <th>Number of Students</th>
+                </tr>
+              </thead>";
+        echo "<tbody>";
+
+        // Loop through the data and display it in the table
+        for($i = 0; $i < count($result['results']) ; ++$i) {
+            
+                
+            echo "<tr>";
+            echo "<td>" , htmlspecialchars($result['results'][$i]['year'], ENT_QUOTES, 'UTF-8') , "</td>";
+            echo "<td>" , htmlspecialchars($result['results'][$i]['semester'], ENT_QUOTES, 'UTF-8') , "</td>";
+            echo "<td>" , htmlspecialchars($result['results'][$i]['the_programs'], ENT_QUOTES, 'UTF-8') , "</td>";
+            echo "<td>" , htmlspecialchars($result['results'][$i]['nationality'], ENT_QUOTES, 'UTF-8') , "</td>";
+            echo "<td>" , htmlspecialchars($result['results'][$i]['colleges'], ENT_QUOTES, 'UTF-8') , "</td>";
+            echo "<td>" , htmlspecialchars($result['results'][$i]['number_of_students'], ENT_QUOTES, 'UTF-8') , "</td>";
+            echo "</tr>";
+    }
+
+        echo "</tbody>";
+        echo "</table>";
+    } else {
+        echo "<p class = empty>No data found in the API response.</p>";
+    }
+}
+?>
+    </div>
+    <footer>
+        <p>Powered by the <a href="https://data.gov.bh">Bahrain Open Data Portal</a> | UOB Students Enrollment</p>
+    </footer>
 </body>
 </html>
